@@ -22,39 +22,44 @@ struct ContentView: View {
         NavigationStack {
             
             VStack {
-                
-                Button("Get Emojis") {
-                    
-                    viewModel.loadEmojis()
-                }
-                .padding()
-                .disabled(viewModel.isLoading)
-                
-                ScrollView(.horizontal) {
-                    
-                    HStack {
+            
+                ZStack {
+                    Rectangle()
+                        .opacity(0)
+                        .frame(height: 100)
+
+                    if let emoji = viewModel.randomEmoji {
                         
-                        ForEach(viewModel.emojis.prefix(7)) { emoji in
+                        VStack {
                             
-                            VStack {
+                            AsyncImage(url: URL(string: emoji.url)) { image in
                                 
-                                AsyncImage(url: URL(string: emoji.url)) { image in
-                                        
-                                    image.resizable().scaledToFit()
-                                } placeholder: {
-                                    
-                                    ProgressView()
-                                }
-                                .frame(width: 50, height: 50)
+                                image.resizable().scaledToFit()
+                            } placeholder: {
                                 
-                                Text(emoji.id)
-                                    .font(.caption2)
+                                ProgressView()
                             }
-                            .padding(.horizontal, 4)
+                            .frame(width: 80, height: 80)
+
+                            Text(emoji.id)
+                                .font(.caption)
                         }
                     }
-                    .padding()
                 }
+                .padding()
+                
+                Button("Random Emoji", systemImage: "shuffle") {
+                    
+                    viewModel.getRandomEmoji()
+                }
+                .padding()
+                .labelStyle(.titleAndIcon)
+                .buttonStyle(.borderedProminent)
+                .disabled(viewModel.isLoading)
+            }
+            .onAppear {
+                
+                viewModel.loadEmojis()
             }
             .navigationTitle("Emojipedia 📒")
         }

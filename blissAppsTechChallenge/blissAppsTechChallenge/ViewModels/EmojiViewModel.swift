@@ -12,6 +12,7 @@ class EmojiViewModel: ObservableObject {
     
     @Published var emojis: [Emoji] = []
     @Published var isLoading: Bool = false
+    @Published var randomEmoji: Emoji?
     private let store: EmojiStore
     
     init(context: NSManagedObjectContext) {
@@ -54,5 +55,12 @@ class EmojiViewModel: ObservableObject {
                 }
             }
         }
+    }
+    
+    func getRandomEmoji() {
+        
+        guard !emojis.isEmpty else { return }
+        
+        randomEmoji = emojis.randomElement()
     }
 }
