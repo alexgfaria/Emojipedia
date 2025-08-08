@@ -28,6 +28,7 @@ struct ContentView: View {
                     viewModel.loadEmojis()
                 }
                 .padding()
+                .disabled(viewModel.isLoading)
                 
                 ScrollView(.horizontal) {
                     

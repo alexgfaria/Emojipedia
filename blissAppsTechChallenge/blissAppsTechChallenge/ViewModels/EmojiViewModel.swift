@@ -11,6 +11,7 @@ import CoreData
 class EmojiViewModel: ObservableObject {
     
     @Published var emojis: [Emoji] = []
+    @Published var isLoading: Bool = false
     private let store: EmojiStore
     
     init(context: NSManagedObjectContext) {
@@ -20,20 +21,37 @@ class EmojiViewModel: ObservableObject {
     
     func loadEmojis() {
         
+        guard !isLoading else { return }
+        
+        isLoading = true
+        
         Task {
             
-            do {
-                
-                let fetched = try await EmojiService.shared.fetchEmojis()
-                store.save(emojis: fetched)
+            if store.hasEmoji() {
                 
                 await MainActor.run {
                     
-                    self.emojis = fetched
+                    let loaded = store.load()
+                    self.emojis = loaded
+                    isLoading = false
                 }
-            } catch {
+            } else {
                 
-                print("Error fetching emojis: ", error)
+                do {
+                    
+                    let fetched = try await EmojiService.shared.fetchEmojis()
+                    store.save(emojis: fetched)
+                    
+                    await MainActor.run {
+                        
+                        self.emojis = fetched
+                        isLoading = false
+                    }
+                } catch {
+                    
+                    print("Error fetching emojis: ", error)
+                    await MainActor.run { isLoading = false }
+                }
             }
         }
     }

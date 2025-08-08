@@ -34,4 +34,43 @@ class EmojiStore {
             print("Error saving emojis: ", error)
         }
     }
+    
+    //Load emojis from core data
+    func load() -> [Emoji] {
+        
+        let request: NSFetchRequest<EmojiEntity> = EmojiEntity.fetchRequest()
+        
+        do {
+            
+            let result = try context.fetch(request)
+            
+            return result.compactMap { entity in
+            
+                guard let id = entity.id,
+                      let url = entity.url else { return nil }
+                
+                return Emoji(id: id, url: url)
+            }
+        } catch {
+            
+            print("Error loading emojis: ", error)
+            return []
+        }
+    }
+    
+    //check memory for emoji
+    func hasEmoji() -> Bool {
+        
+        let request: NSFetchRequest<EmojiEntity> = EmojiEntity.fetchRequest()
+        request.fetchLimit = 1
+        
+        do {
+            
+            let count = try context.count(for: request)
+            return count > 0
+        } catch {
+            
+            return false
+        }
+    }
 }
