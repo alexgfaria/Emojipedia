@@ -1,5 +1,5 @@
 import Foundation
-import Combine
+import CoreData
 
 //
 //  EmojiViewModel.swift
@@ -11,6 +11,12 @@ import Combine
 class EmojiViewModel: ObservableObject {
     
     @Published var emojis: [Emoji] = []
+    private let store: EmojiStore
+    
+    init(context: NSManagedObjectContext) {
+        
+        self.store = EmojiStore(context: context)
+    }
     
     func loadEmojis() {
         
@@ -19,6 +25,7 @@ class EmojiViewModel: ObservableObject {
             do {
                 
                 let fetched = try await EmojiService.shared.fetchEmojis()
+                store.save(emojis: fetched)
                 
                 await MainActor.run {
                     

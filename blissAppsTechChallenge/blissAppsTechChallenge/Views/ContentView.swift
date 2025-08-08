@@ -1,3 +1,5 @@
+import SwiftUI
+
 //
 //  ContentView.swift
 //  blissAppsTechChallenge
@@ -5,11 +7,15 @@
 //  Created by Alex Faria on 08/08/2025.
 //
 
-import SwiftUI
-
 struct ContentView: View {
     
-    @StateObject var viewModel = EmojiViewModel()
+    @Environment(\.managedObjectContext) private var context
+    @StateObject var viewModel: EmojiViewModel
+
+    init() {
+        let context = PersistenceController.shared.container.viewContext
+        _viewModel = StateObject(wrappedValue: EmojiViewModel(context: context))
+    }
     
     var body: some View {
         
@@ -17,7 +23,7 @@ struct ContentView: View {
             
             VStack {
                 
-                Button("Get Emoji") {
+                Button("Get Emojis") {
                     
                     viewModel.loadEmojis()
                 }
@@ -56,5 +62,5 @@ struct ContentView: View {
 
 #Preview {
     
-    ContentView().environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
+    ContentView()
 }
