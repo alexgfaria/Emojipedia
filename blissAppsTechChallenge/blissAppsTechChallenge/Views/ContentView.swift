@@ -10,12 +10,15 @@ import SwiftUI
 struct ContentView: View {
     
     @Environment(\.managedObjectContext) private var context
-    @StateObject var viewModel: EmojiViewModel
+    @StateObject var emojiViewModel: EmojiViewModel
+    @StateObject private var avatarViewModel: AvatarViewModel
     @State private var showEmojiList = false
 
     init() {
+        
         let context = PersistenceController.shared.container.viewContext
-        _viewModel = StateObject(wrappedValue: EmojiViewModel(context: context))
+        _emojiViewModel = StateObject(wrappedValue: EmojiViewModel(context: context))
+        _avatarViewModel = StateObject(wrappedValue: AvatarViewModel(context: context))
     }
     
     var body: some View {
@@ -29,7 +32,7 @@ struct ContentView: View {
                         .opacity(0)
                         .frame(height: 100)
 
-                    if let emoji = viewModel.randomEmoji {
+                    if let emoji = emojiViewModel.randomEmoji {
                         
                         VStack {
                             
@@ -49,27 +52,80 @@ struct ContentView: View {
                 }
                 .padding()
                 
-                Button("Random Emoji", systemImage: "shuffle") {
+                VStack(spacing: 12) {
                     
-                    viewModel.getRandomEmoji()
+                    Button("Random Emoji", systemImage: "shuffle") {
+                        
+                        emojiViewModel.getRandomEmoji()
+                    }
+                    .labelStyle(.titleAndIcon)
+                    .buttonStyle(.bordered)
+                    .disabled(emojiViewModel.isLoading)
+                    
+                    NavigationLink(destination: EmojiListView(viewModel: emojiViewModel)) {
+                        
+                        Label("Emoji List", systemImage: "list.bullet")
+                    }
+                    .labelStyle(.titleAndIcon)
+                    .buttonStyle(.bordered)
+                    .disabled(emojiViewModel.isLoading)
                 }
-                .padding()
-                .labelStyle(.titleAndIcon)
-                .buttonStyle(.bordered)
-                .disabled(viewModel.isLoading)
+                .padding(.vertical)
                 
-                NavigationLink(destination: EmojiListView(viewModel: viewModel)) {
+                VStack(spacing: 12) {
                     
-                    Label("Emoji List", systemImage: "list.bullet")
+                    HStack {
+                        
+                        TextField("Username", text: $avatarViewModel.query)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled(true)
+                            .textFieldStyle(.roundedBorder)
+                        
+                        Button {
+                            
+                            avatarViewModel.search()
+                        } label: {
+                            
+                            Label("Search", systemImage: "magnifyingglass")
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .disabled(avatarViewModel.isLoading)
+                    }
+
+                    if avatarViewModel.isLoading {
+                        
+                        ProgressView().padding(.top, 4)
+                    }
+
+                    if avatarViewModel.errorMessage == nil,
+                       let avatar = avatarViewModel.avatar {
+                        
+                        VStack(spacing: 8) {
+                            
+                            if let ui = UIImage(data: avatar.imageData) {
+                                
+                                Image(uiImage: ui)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 120, height: 120)
+                                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                            }
+                            Text(avatar.login).font(.headline)
+                        }
+                        .padding()
+                    }
+
+                    if let msg = avatarViewModel.errorMessage {
+                        
+                        Text(msg).foregroundColor(.red)
+                    }
                 }
-                .frame(maxWidth: .infinity)
-                .padding()
-                .labelStyle(.titleAndIcon)
-                .buttonStyle(.bordered)
+                .padding(.horizontal)
             }
+            .padding(.horizontal, 50)
             .task {
                 
-                viewModel.loadEmojis()
+                emojiViewModel.loadEmojis()
             }
             .navigationTitle("Emojipedia 📒")
         }
