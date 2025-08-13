@@ -11,6 +11,7 @@ struct ContentView: View {
     
     @Environment(\.managedObjectContext) private var context
     @StateObject var viewModel: EmojiViewModel
+    @State private var showEmojiList = false
 
     init() {
         let context = PersistenceController.shared.container.viewContext
@@ -54,10 +55,19 @@ struct ContentView: View {
                 }
                 .padding()
                 .labelStyle(.titleAndIcon)
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.bordered)
                 .disabled(viewModel.isLoading)
+                
+                NavigationLink(destination: EmojiListView(viewModel: viewModel)) {
+                    
+                    Label("Emoji List", systemImage: "list.bullet")
+                }
+                .frame(maxWidth: .infinity)
+                .padding()
+                .labelStyle(.titleAndIcon)
+                .buttonStyle(.bordered)
             }
-            .onAppear {
+            .task {
                 
                 viewModel.loadEmojis()
             }

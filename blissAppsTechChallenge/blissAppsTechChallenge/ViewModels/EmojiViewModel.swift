@@ -8,7 +8,7 @@ import CoreData
 //  Created by Alex Faria on 08/08/2025.
 //
 
-class EmojiViewModel: ObservableObject {
+final class EmojiViewModel: ObservableObject {
     
     @Published var emojis: [Emoji] = []
     @Published var isLoading: Bool = false
@@ -29,7 +29,7 @@ class EmojiViewModel: ObservableObject {
         Task {
             
             if store.hasEmoji() {
-                
+                                
                 await MainActor.run {
                     
                     let loaded = store.load()
@@ -41,10 +41,10 @@ class EmojiViewModel: ObservableObject {
                 do {
                     
                     let fetched = try await EmojiService.shared.fetchEmojis()
-                    store.save(emojis: fetched)
                     
                     await MainActor.run {
                         
+                        store.save(emojis: fetched)
                         self.emojis = fetched
                         isLoading = false
                     }

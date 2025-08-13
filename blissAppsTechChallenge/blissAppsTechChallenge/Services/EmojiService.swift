@@ -7,7 +7,7 @@ import Foundation
 //  Created by Alex Faria on 08/08/2025.
 //
 
-class EmojiService {
+final class EmojiService {
     
     static let shared = EmojiService()
     
@@ -17,7 +17,7 @@ class EmojiService {
         
         let (data, _) = try await URLSession.shared.data(from: url)
         let rawDict = try JSONDecoder().decode([String:String].self, from: data)
-        
+     
         return rawDict.map {
             
             Emoji(id: $0.key, url: $0.value)

@@ -7,7 +7,7 @@ import CoreData
 //  Created by Alex Faria on 08/08/2025.
 //
 
-class EmojiStore {
+final class EmojiStore {
     
     private let context: NSManagedObjectContext
     
