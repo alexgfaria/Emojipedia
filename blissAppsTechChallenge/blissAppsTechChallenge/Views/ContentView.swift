@@ -10,15 +10,19 @@ import SwiftUI
 struct ContentView: View {
     
     @Environment(\.managedObjectContext) private var context
+    
     @StateObject var emojiViewModel: EmojiViewModel
     @StateObject private var avatarViewModel: AvatarViewModel
-    @State private var showEmojiList = false
+    @StateObject private var avatarListViewModel: AvatarListViewModel
+    
+    @State private var showSavedAvatars = false
 
     init() {
         
         let context = PersistenceController.shared.container.viewContext
         _emojiViewModel = StateObject(wrappedValue: EmojiViewModel(context: context))
         _avatarViewModel = StateObject(wrappedValue: AvatarViewModel(context: context))
+        _avatarListViewModel = StateObject(wrappedValue: AvatarListViewModel(context: context))
     }
     
     var body: some View {
@@ -54,17 +58,17 @@ struct ContentView: View {
                 
                 VStack(spacing: 12) {
                     
-                    Button("Random Emoji", systemImage: "shuffle") {
+                    Button(Localizables.Buttons.random, systemImage: Images.random) {
                         
                         emojiViewModel.getRandomEmoji()
                     }
                     .labelStyle(.titleAndIcon)
                     .buttonStyle(.bordered)
-                    .disabled(emojiViewModel.isLoading)
+                    .disabled(emojiViewModel.isLoading || emojiViewModel.emojis.isEmpty)
                     
                     NavigationLink(destination: EmojiListView(viewModel: emojiViewModel)) {
                         
-                        Label("Emoji List", systemImage: "list.bullet")
+                        Label(Localizables.Buttons.emojiList, systemImage: Images.emoji)
                     }
                     .labelStyle(.titleAndIcon)
                     .buttonStyle(.bordered)
@@ -76,7 +80,7 @@ struct ContentView: View {
                     
                     HStack {
                         
-                        TextField("Username", text: $avatarViewModel.query)
+                        TextField(Localizables.Buttons.search, text: $avatarViewModel.query)
                             .textInputAutocapitalization(.never)
                             .autocorrectionDisabled(true)
                             .textFieldStyle(.roundedBorder)
@@ -86,7 +90,7 @@ struct ContentView: View {
                             avatarViewModel.search()
                         } label: {
                             
-                            Label("Search", systemImage: "magnifyingglass")
+                            Label(Localizables.Buttons.search, systemImage: Images.search)
                         }
                         .buttonStyle(.borderedProminent)
                         .disabled(avatarViewModel.isLoading)
@@ -121,17 +125,59 @@ struct ContentView: View {
                     }
                 }
                 .padding(.horizontal)
+                
+                Button {
+                    
+                    avatarListViewModel.loadAvatars()   // load BEFORE navigating
+                    showSavedAvatars = true
+                } label: {
+                    
+                    Label(Localizables.Buttons.avatars, systemImage: Images.avatars)
+                }
+                .frame(maxWidth: .infinity)
+                .buttonStyle(.bordered)
+                .disabled(avatarViewModel.hasNoAvatars)
+                .navigationDestination(isPresented: $showSavedAvatars) {
+                    
+                    AvatarListView(viewModel: avatarListViewModel)
+                }
             }
             .padding(.horizontal, 50)
             .task {
                 
                 emojiViewModel.loadEmojis()
             }
-            .navigationTitle("Emojipedia 📒")
+            .navigationTitle(Localizables.Titles.pageTitle)
         }
     }
 }
 
+//MARK: - Constants
+private enum Localizables {
+    
+    enum Buttons {
+        
+        static let random = "Random Emoji"
+        static let emojiList = "Emoji List"
+        static let search = "Username"
+        static let avatars = "Saved Avatares"
+    }
+    
+    enum Titles {
+        
+        static let pageTitle = "Emojipedia 📒"
+    }
+}
+
+private enum Images {
+    
+    static let random = "shuffle"
+    static let emoji = "list.bullet"
+    static let search = "magnifyingglass"
+    static let avatars = "person.2.crop.square.stack"
+}
+
+//MARK: - Preview
 #Preview {
     
     ContentView()

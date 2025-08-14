@@ -44,7 +44,7 @@ struct EmojiListView: View {
                                     }
                                 
                             case .failure(_):
-                                Image(systemName: "xmark.octagon.fill")
+                                Image(systemName: Images.invalid)
                                     .resizable()
                                     .scaledToFit()
                                     .foregroundColor(.red)
@@ -71,10 +71,25 @@ struct EmojiListView: View {
                 items = viewModel.emojis
             }
         }
-        .navigationTitle("Emoji List")
+        .navigationTitle(Localizables.Titles.pageTitle)
     }
 }
 
+//MARK: - Constants
+private enum Localizables {
+    
+    enum Titles {
+        
+        static let pageTitle = "Emoji List"
+    }
+}
+
+private enum Images {
+    
+    static let invalid = "xmark.octagon.fill"
+}
+
+//MARK: - Preview
 #Preview {
     
     func generatePreviewEmojis() -> [Emoji] {

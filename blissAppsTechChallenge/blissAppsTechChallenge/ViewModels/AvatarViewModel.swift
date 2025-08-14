@@ -18,6 +18,11 @@ final class AvatarViewModel: ObservableObject {
 
     private let store: AvatarStore
     
+    var hasNoAvatars: Bool {
+        
+        store.fetchAllAvatars().isEmpty
+    }
+    
     init(context: NSManagedObjectContext) {
         
         self.store = AvatarStore(context: context)
