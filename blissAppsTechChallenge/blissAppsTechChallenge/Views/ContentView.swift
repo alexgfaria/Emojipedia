@@ -8,34 +8,33 @@ import SwiftUI
 //
 
 struct ContentView: View {
-    
-    @Environment(\.managedObjectContext) private var context
-    
+        
     @StateObject var emojiViewModel: EmojiViewModel
     @StateObject private var avatarViewModel: AvatarViewModel
     @StateObject private var avatarListViewModel: AvatarListViewModel
+    @StateObject private var appleRepoViewModel: AppleRepoViewModel
     
     @State private var showSavedAvatars = false
-
+    @State private var showAppleRepos = false
+    
     init() {
         
         let context = PersistenceController.shared.container.viewContext
         _emojiViewModel = StateObject(wrappedValue: EmojiViewModel(context: context))
         _avatarViewModel = StateObject(wrappedValue: AvatarViewModel(context: context))
         _avatarListViewModel = StateObject(wrappedValue: AvatarListViewModel(context: context))
+        _appleRepoViewModel = StateObject(wrappedValue: AppleRepoViewModel())
     }
     
     var body: some View {
         
         NavigationStack {
             
-            VStack {
-            
+            VStack(spacing: 16) {
+                
+                // MARK: - Random Emoji display
                 ZStack {
-                    Rectangle()
-                        .opacity(0)
-                        .frame(height: 100)
-
+                    
                     if let emoji = emojiViewModel.randomEmoji {
                         
                         VStack {
@@ -48,39 +47,43 @@ struct ContentView: View {
                                 ProgressView()
                             }
                             .frame(width: 80, height: 80)
-
+                            
                             Text(emoji.id)
                                 .font(.caption)
                         }
                     }
                 }
+                .frame(height: 100)
                 .padding()
                 
-                VStack(spacing: 12) {
-                    
-                    Button(Localizables.Buttons.random, systemImage: Images.random) {
-                        
-                        emojiViewModel.getRandomEmoji()
-                    }
-                    .labelStyle(.titleAndIcon)
-                    .buttonStyle(.bordered)
-                    .disabled(emojiViewModel.isLoading || emojiViewModel.emojis.isEmpty)
-                    
-                    NavigationLink(destination: EmojiListView(viewModel: emojiViewModel)) {
-                        
-                        Label(Localizables.Buttons.emojiList, systemImage: Images.emoji)
-                    }
-                    .labelStyle(.titleAndIcon)
-                    .buttonStyle(.bordered)
-                    .disabled(emojiViewModel.isLoading)
+                // MARK: - Random Emoji button
+                Button {
+                    emojiViewModel.getRandomEmoji()
+                } label: {
+                    Label(Localizables.Buttons.random, systemImage: Images.random)
+                        .frame(maxWidth: .infinity)
                 }
-                .padding(.vertical)
+                .labelStyle(.titleAndIcon)
+                .buttonStyle(.bordered)
+                .buttonBorderShape(.roundedRectangle)
+                .disabled(emojiViewModel.isLoading || emojiViewModel.emojis.isEmpty)
                 
-                VStack(spacing: 12) {
+                // MARK: - Emoji List navigation
+                NavigationLink(destination: EmojiListView(viewModel: emojiViewModel)) {
+                    Label(Localizables.Buttons.emojiList, systemImage: Images.emoji)
+                        .frame(maxWidth: .infinity)
+                }
+                .labelStyle(.titleAndIcon)
+                .buttonStyle(.bordered)
+                .buttonBorderShape(.roundedRectangle)
+                .disabled(emojiViewModel.isLoading)
+                
+                // MARK: - Avatar Search section
+                VStack {
                     
-                    HStack {
+                    HStack(spacing: 12) {
                         
-                        TextField(Localizables.Buttons.search, text: $avatarViewModel.query)
+                        TextField(Localizables.Input.username, text: $avatarViewModel.query)
                             .textInputAutocapitalization(.never)
                             .autocorrectionDisabled(true)
                             .textFieldStyle(.roundedBorder)
@@ -95,12 +98,13 @@ struct ContentView: View {
                         .buttonStyle(.borderedProminent)
                         .disabled(avatarViewModel.isLoading)
                     }
-
+                    .frame(maxWidth: .infinity)
+                    
                     if avatarViewModel.isLoading {
                         
                         ProgressView().padding(.top, 4)
                     }
-
+                    
                     if avatarViewModel.errorMessage == nil,
                        let avatar = avatarViewModel.avatar {
                         
@@ -112,20 +116,20 @@ struct ContentView: View {
                                     .resizable()
                                     .scaledToFit()
                                     .frame(width: 120, height: 120)
-                                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                                    .clipShape(RoundedRectangle(cornerRadius: 8))
                             }
                             Text(avatar.login).font(.headline)
                         }
-                        .padding()
                     }
-
+                    
                     if let msg = avatarViewModel.errorMessage {
                         
                         Text(msg).foregroundColor(.red)
                     }
                 }
-                .padding(.horizontal)
+                .frame(maxWidth: .infinity)
                 
+                // MARK: - Saved Avatars navigation
                 Button {
                     
                     avatarListViewModel.loadAvatars()   // load BEFORE navigating
@@ -133,16 +137,34 @@ struct ContentView: View {
                 } label: {
                     
                     Label(Localizables.Buttons.avatars, systemImage: Images.avatars)
+                        .frame(maxWidth: .infinity)
                 }
-                .frame(maxWidth: .infinity)
                 .buttonStyle(.bordered)
+                .buttonBorderShape(.roundedRectangle)
                 .disabled(avatarViewModel.hasNoAvatars)
                 .navigationDestination(isPresented: $showSavedAvatars) {
                     
                     AvatarListView(viewModel: avatarListViewModel)
                 }
+                
+                // MARK: - Apple Repos navigation
+                Button {
+                    
+                    appleRepoViewModel.resetAndLoad()
+                    showAppleRepos = true
+                } label: {
+                    
+                    Label(Localizables.Buttons.repos, systemImage: Images.repos)
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+                .buttonBorderShape(.roundedRectangle)
+                .navigationDestination(isPresented: $showAppleRepos) {
+                    
+                    AppleRepoView(viewModel: appleRepoViewModel)
+                }
             }
-            .padding(.horizontal, 50)
+            .padding(.horizontal, 24)
             .task {
                 
                 emojiViewModel.loadEmojis()
@@ -155,12 +177,18 @@ struct ContentView: View {
 //MARK: - Constants
 private enum Localizables {
     
+    enum Input {
+        
+        static let username = "Username"
+    }
+    
     enum Buttons {
         
         static let random = "Random Emoji"
         static let emojiList = "Emoji List"
-        static let search = "Username"
-        static let avatars = "Saved Avatares"
+        static let search = "Search"
+        static let avatars = "Saved Avatars"
+        static let repos = "Apple Repos"
     }
     
     enum Titles {
@@ -175,6 +203,7 @@ private enum Images {
     static let emoji = "list.bullet"
     static let search = "magnifyingglass"
     static let avatars = "person.2.crop.square.stack"
+    static let repos = "shippingbox.fill"
 }
 
 //MARK: - Preview
