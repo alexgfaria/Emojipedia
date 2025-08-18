@@ -163,6 +163,13 @@ struct ContentView: View {
                     
                     AppleRepoView(viewModel: appleRepoViewModel)
                 }
+                
+                Spacer()
+                
+                GlowingText(text: Localizables.Titles.bottomTitle)
+                    .font(.footnote)
+                    .foregroundColor(.gray)
+                    .frame(maxWidth: .infinity)
             }
             .padding(.horizontal, 24)
             .task {
@@ -194,6 +201,7 @@ private enum Localizables {
     enum Titles {
         
         static let pageTitle = "Emojipedia 📒"
+        static let bottomTitle = "made with ❤️ by Alex Faria"
     }
 }
 
@@ -210,4 +218,30 @@ private enum Images {
 #Preview {
     
     ContentView()
+}
+
+// MARK: - GlowingText View
+struct GlowingText: View {
+    
+    let text: String
+    @State private var glow: Bool = false
+    
+    var body: some View {
+        
+        Text(text)
+            .overlay(
+                Text(text)
+                    .foregroundColor(.gray.opacity(0.2))
+                    .blur(radius: 4)
+                    .opacity(glow ? 1 : 0.2)
+            )
+            .onAppear {
+                
+                withAnimation(.easeInOut(duration: 1).repeatForever(autoreverses: true)) {
+                    
+                    glow = true
+                }
+            }
+            .animation(.easeInOut(duration: 1).repeatForever(autoreverses: true), value: UUID())
+    }
 }
