@@ -72,6 +72,7 @@ struct EmojiListView: View {
             }
         }
         .navigationTitle(Localizables.Titles.pageTitle)
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 
@@ -100,7 +101,7 @@ private enum Images {
             Emoji(id: "tada", url: "https://github.githubassets.com/images/icons/emoji/unicode/1f389.png?v8")
         ]
         
-        return (0..<60).map { index in
+        return (0..<200).map { index in
             let emoji = baseEmojis[index % baseEmojis.count]
             return Emoji(id: "\(emoji.id)\(index)", url: emoji.url)
         }
