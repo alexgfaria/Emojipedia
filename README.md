@@ -1,9 +1,6 @@
 # Bliss Apps Challenge – iOS
 Tech assessment for Bliss Apps
 
-## Setup
-
-
 ## Funcionalidades Implementadas
 
 Este projeto implementa os requisitos do desafio técnico Bliss Apps, utilizando SwiftUI, arquitetura MVVM, Core Data para persistência local, e networking assíncrono com async/await.
