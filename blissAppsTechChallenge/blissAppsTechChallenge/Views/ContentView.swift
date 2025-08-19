@@ -13,6 +13,7 @@ struct ContentView: View {
     @StateObject private var avatarViewModel: AvatarViewModel
     @StateObject private var avatarListViewModel: AvatarListViewModel
     @StateObject private var appleRepoViewModel: AppleRepoViewModel
+    @FocusState private var isUsernameFocused: Bool
     
     @State private var showSavedAvatars = false
     @State private var showAppleRepos = false
@@ -58,8 +59,10 @@ struct ContentView: View {
                 
                 // MARK: - Random Emoji button
                 Button {
+                    
                     emojiViewModel.getRandomEmoji()
                 } label: {
+                    
                     Label(Localizables.Buttons.random, systemImage: Images.random)
                         .frame(maxWidth: .infinity)
                 }
@@ -70,6 +73,7 @@ struct ContentView: View {
                 
                 // MARK: - Emoji List navigation
                 NavigationLink(destination: EmojiListView(viewModel: emojiViewModel)) {
+                    
                     Label(Localizables.Buttons.emojiList, systemImage: Images.emoji)
                         .frame(maxWidth: .infinity)
                 }
@@ -87,9 +91,17 @@ struct ContentView: View {
                             .textInputAutocapitalization(.never)
                             .autocorrectionDisabled(true)
                             .textFieldStyle(.roundedBorder)
+                            .submitLabel(.search)
+                            .focused($isUsernameFocused)
+                            .onSubmit {
+                                
+                                isUsernameFocused = false
+                                avatarViewModel.search()
+                            }
                         
                         Button {
                             
+                            isUsernameFocused = false
                             avatarViewModel.search()
                         } label: {
                             
@@ -166,10 +178,16 @@ struct ContentView: View {
                 
                 Spacer()
                 
+                //MARK: - Credits
                 GlowingText(text: Localizables.Titles.bottomTitle)
                     .font(.footnote)
                     .foregroundColor(.gray)
                     .frame(maxWidth: .infinity)
+            }
+            .contentShape(Rectangle())
+            .onTapGesture {
+                
+                isUsernameFocused = false
             }
             .padding(.horizontal, 24)
             .task {
@@ -178,6 +196,7 @@ struct ContentView: View {
             }
             .navigationTitle(Localizables.Titles.pageTitle)
         }
+        .scrollDismissesKeyboard(.automatic)
     }
 }
 
