@@ -1,5 +1,7 @@
 # Bliss Apps Challenge – iOS
-Tech assessment for Bliss Apps
+Tech assessment para Bliss Apps
+
+🌍 Available languages: [Português](README.pt.md) | [English](README.en.md)
 
 ## Enunciado
 O enunciado completo está disponível [aqui](./challenge.pdf).
